@@ -1,130 +1,1446 @@
-import javax.json.*;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.StringWriter;
+<dependency>
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>1.0.4</version>
+        </dependency>
+        
+        import javax.json.*; 
+import java.io.FileNotFoundException; 
+import java.io.FileReader; 
+import java.io.StringWriter; 
+ 
+public class jsonObjectBuider { 
+    public static JsonArray related1; 
+ 
+    public static JsonObject buildJsonDocument() { 
+        JsonObject jsonObject = Json.createObjectBuilder() 
+                .add("acct", "1234") 
+                .add("accts", Json.createArrayBuilder() 
+                        .add(Json.createObjectBuilder() 
+                                .add("acctClodeDt", "12/12/12") 
+                                .add("related", Json.createArrayBuilder() 
+                                        .add(Json.createObjectBuilder() 
+                                                .add("pk", Json.createObjectBuilder() 
+                                                        .add("sorptyid", "rsp111") 
+                                                        .add("sorid", "rs111") 
+                                                ) 
+                                        ) 
+                                        .add(Json.createObjectBuilder() 
+                                                .add("pk", Json.createObjectBuilder() 
+                                                        .add("sorptyid", "rsp222") 
+                                                        .add("sorid", "rs222") 
+                                                ) 
+                                        ) 
+ 
+                                ) 
+                                .add("legal", Json.createArrayBuilder() 
+                                        .add(Json.createObjectBuilder() 
+                                                .add("pk", Json.createObjectBuilder() 
+                                                        .add("sorptyid", "lsp111") 
+                                                        .add("sorid", "ls111") 
+                                                )) 
+                                ) 
+                        ) 
+ 
+                ) 
+                .build(); 
+        return jsonObject; 
+    } 
+ 
+    private static void navigateJsonStructure(JsonValue jsonValue, String key) { 
+        if (key != null) 
+            printKey(key); 
+        switch (jsonValue.getValueType()) { 
+            case OBJECT: 
+                JsonObject jsonObject = (JsonObject) jsonValue; 
+                for (String name : jsonObject.keySet()) 
+                    navigateJsonStructure(jsonObject.get(name), name); 
+                break; 
+            case ARRAY: 
+                for (JsonValue value : (JsonArray) jsonValue) 
+                    navigateJsonStructure(value, null); 
+                break; 
+            case STRING: 
+                printValue(((JsonString) jsonValue).getString()); 
+                break; 
+            case NUMBER: 
+                printValue(jsonValue.toString()); 
+                break; 
+            case TRUE: 
+            case FALSE: 
+            case NULL: 
+                printValue(jsonValue.getValueType().toString()); 
+                break; 
+        } 
+    } 
+ 
+    private static void printKey(String key) { 
+        System.out.print(key + ": "); 
+    } 
+ 
+    private static void printValue(String x) { 
+        System.out.println(x); 
+    } 
+ 
+    private static String writeJsonString(JsonObject writeObject) { 
+        StringWriter stringWriter = new StringWriter(); 
+        JsonWriter jsonWriter = Json.createWriter(stringWriter); 
+        jsonWriter.writeObject(writeObject); 
+        jsonWriter.close(); 
+        return stringWriter.toString(); 
+ 
+    } 
+ 
+ 
+    public static void main(String... args) throws FileNotFoundException { 
+        navigateJsonStructure(buildJsonDocument(), null); 
+        System.out.println(writeJsonString(buildJsonDocument())); 
+ 
+ 
+        JsonArray acctsArray = buildJsonDocument().getJsonArray("accts"); 
+        for (int i = 0; i < acctsArray.size(); i++) { 
+            JsonObject accts = acctsArray.getJsonObject(i); 
+            JsonArray relatedArray = accts.getJsonArray("related"); 
+            JsonArray related1 = Json.createArrayBuilder().build(); 
+ 
+            for (int j = 0; j < relatedArray.size(); j++) { 
+                JsonObject related = relatedArray.getJsonObject(j); 
+                System.out.println(relatedArray.toString()); 
+                JsonObject pkobj = related.getJsonObject("pk"); 
+                System.out.println(writeJsonString(pkobj)); 
+                if (pkobj.getString("sorptyid").toString() == "rsp111") { 
+ 
+                    related1.add(relatedArray); 
+                } else { 
+ 
+                    System.out.println(related.toString()); 
+                } 
+            } 
+            System.out.println(related1.toString()); 
+ 
+        } 
+ 
+ 
+            // JsonObject accts = obj.getJsonObject("accts"); 
+            //JsonArray relatedArray = accts.getJsonArray("related"); 
+            // JsonObject object = relatedArray.getJsonObject(1); 
+        /*for(JsonValue relatedObj: relatedArray) 
+        { 
+            System.out.println(relatedObj.toString()); 
+        } 
+        */ 
+ 
+ 
+ 
+    } 
+} 
+ 
 
-public class jsonObjectBuider {
-    public static JsonArray related1;
+// CREATING A MODEL FROM STRING 
 
-    public static JsonObject buildJsonDocument() {
-        JsonObject jsonObject = Json.createObjectBuilder()
-                .add("acct", "1234")
-                .add("accts", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
-                                .add("acctClodeDt", "12/12/12")
-                                .add("related", Json.createArrayBuilder()
-                                        .add(Json.createObjectBuilder()
-                                                .add("pk", Json.createObjectBuilder()
-                                                        .add("sorptyid", "rsp111")
-                                                        .add("sorid", "rs111")
-                                                )
-                                        )
-                                        .add(Json.createObjectBuilder()
-                                                .add("pk", Json.createObjectBuilder()
-                                                        .add("sorptyid", "rsp222")
-                                                        .add("sorid", "rs222")
-                                                )
-                                        )
+ 
 
-                                )
-                                .add("legal", Json.createArrayBuilder()
-                                        .add(Json.createObjectBuilder()
-                                                .add("pk", Json.createObjectBuilder()
-                                                        .add("sorptyid", "lsp111")
-                                                        .add("sorid", "ls111")
-                                                ))
-                                )
-                        )
+package com.readlearncode.object.lesson2; 
 
-                )
-                .build();
-        return jsonObject;
-    }
+  
 
-    private static void navigateJsonStructure(JsonValue jsonValue, String key) {
-        if (key != null)
-            printKey(key);
-        switch (jsonValue.getValueType()) {
-            case OBJECT:
-                JsonObject jsonObject = (JsonObject) jsonValue;
-                for (String name : jsonObject.keySet())
-                    navigateJsonStructure(jsonObject.get(name), name);
-                break;
-            case ARRAY:
-                for (JsonValue value : (JsonArray) jsonValue)
-                    navigateJsonStructure(value, null);
-                break;
-            case STRING:
-                printValue(((JsonString) jsonValue).getString());
-                break;
-            case NUMBER:
-                printValue(jsonValue.toString());
-                break;
-            case TRUE:
-            case FALSE:
-            case NULL:
-                printValue(jsonValue.getValueType().toString());
-                break;
-        }
-    }
+import javax.json.Json; 
 
-    private static void printKey(String key) {
-        System.out.print(key + ": ");
-    }
+import javax.json.JsonObject; 
 
-    private static void printValue(String x) {
-        System.out.println(x);
-    }
+import javax.json.JsonReader; 
 
-    private static String writeJsonString(JsonObject writeObject) {
-        StringWriter stringWriter = new StringWriter();
-        JsonWriter jsonWriter = Json.createWriter(stringWriter);
-        jsonWriter.writeObject(writeObject);
-        jsonWriter.close();
-        return stringWriter.toString();
+import java.io.StringReader; 
 
-    }
+  
 
+/** 
 
-    public static void main(String... args) throws FileNotFoundException {
-        navigateJsonStructure(buildJsonDocument(), null);
-        System.out.println(writeJsonString(buildJsonDocument()));
+* Source code github.com/readlearncode 
 
+* <p> 
 
-        JsonArray acctsArray = buildJsonDocument().getJsonArray("accts");
-        for (int i = 0; i < acctsArray.size(); i++) {
-            JsonObject accts = acctsArray.getJsonObject(i);
-            JsonArray relatedArray = accts.getJsonArray("related");
-            JsonArray related1 = Json.createArrayBuilder().build();
+* Creating an object model from JSON Data 
 
-            for (int j = 0; j < relatedArray.size(); j++) {
-                JsonObject related = relatedArray.getJsonObject(j);
-                System.out.println(relatedArray.toString());
-                JsonObject pkobj = related.getJsonObject("pk");
-                System.out.println(writeJsonString(pkobj));
-                if (pkobj.getString("sorptyid").toString() == "rsp111") {
+* 
 
-                    related1.add(relatedArray);
-                } else {
+* @author Alex Theedom www.readlearncode.com 
 
-                    System.out.println(related.toString());
-                }
-            }
-            System.out.println(related1.toString());
+* @version 1.0 
 
-        }
+*/ 
 
+public class ObjectExample1 { 
 
-            // JsonObject accts = obj.getJsonObject("accts");
-            //JsonArray relatedArray = accts.getJsonArray("related");
-            // JsonObject object = relatedArray.getJsonObject(1);
-        /*for(JsonValue relatedObj: relatedArray)
-        {
-            System.out.println(relatedObj.toString());
-        }
-        */
+  
 
+    public static String JSON = "{\n" + 
 
+            "  \"title\": \"JSON-Processing With Java EE\",\n" + 
 
-    }
-}
+            "  \"chapters\": [\n" + 
+
+            "    \"Introduction\",\n" + 
+
+            "    \"1. JSON and Java\",\n" + 
+
+            "    \"2. JSON-Processing API features\",\n" + 
+
+            "    \"3. The Java EE JSON Object model\",\n" + 
+
+            "    \"4. The Java EE JSON Streaming model\",\n" + 
+
+            "    \"Conclusion\"\n" + 
+
+            "  ],\n" + 
+
+            "  \"released\": true,\n" + 
+
+            "  \"length\": 90,\n" + 
+
+            "  \"sourceCode\": {\n" + 
+
+            "    \"repositoryName\": \"JSON-Processing-with-Java-EE\",\n" + 
+
+            "    \"url\": \"github.com/readlearncode\"\n" + 
+
+            "  },\n" + 
+
+            "  \"complementaryCourse\": [\n" + 
+
+            "    {\n" + 
+
+            "      \"title\": \"RESTful Service with JAX-RS 2.0\",\n" + 
+
+            "      \"length\": 120\n" + 
+
+            "    },\n" + 
+
+            "    {\n" + 
+
+            "      \"title\": \"Java Enterprise Edition Introduction\",\n" + 
+
+            "      \"length\": 130\n" + 
+
+            "    }\n" + 
+
+            "  ],\n" + 
+
+            "  \"notes\": null\n" + 
+
+            "}"; 
+
+  
+
+    /** 
+
+     * Builds a JsonObject from a Stirng of JSON data. 
+
+     * 
+
+     * @return a JsonObject built from a String of JSON data 
+
+     */ 
+
+    public JsonObject loadJsonString() { 
+
+  
+
+        JsonReader jsonReader = Json.createReader(new StringReader(JSON)); 
+
+        JsonObject jsonObject = jsonReader.readObject(); 
+
+        jsonReader.close(); 
+
+  
+
+        return jsonObject; 
+
+    }  
+
+} 
+
+ 
+
+// READING FROM THE FILE 
+
+ 
+
+package com.readlearncode.object.lesson2; 
+
+  
+
+import javax.json.*; 
+
+import java.io.FileNotFoundException; 
+
+import java.io.FileReader; 
+
+  
+
+/** 
+
+* Source code github.com/readlearncode 
+
+* <p> 
+
+* Creating an object model from JSON Data 
+
+* 
+
+* @author Alex Theedom www.readlearncode.com 
+
+* @version 1.0 
+
+*/ 
+
+public class ObjectExample2 { 
+
+  
+
+    private String jsonFileArray = Utils.ROOT + System.getProperty("file.separator") + "jsondata-array.json"; 
+
+    private String jsonFileObject = Utils.ROOT + System.getProperty("file.separator") + "jsondata-object.json"; 
+
+  
+
+    /** 
+
+     * Builds a JsonObject from a flat-file source containing Json data. 
+
+     * 
+
+     * @return a JsonObject built from the flat-file 
+
+     * @throws FileNotFoundException 
+
+     */ 
+
+    public JsonObject loadJsonObject() throws FileNotFoundException { 
+
+  
+
+        JsonReader reader = Json.createReader(new FileReader(jsonFileObject)); 
+
+        JsonObject jsonObject = reader.readObject(); 
+
+  
+
+        return jsonObject; 
+
+  
+
+    } 
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+    /** 
+
+     * Builds a JsonStructute from a flat-file source containing Json Array data. 
+
+     * 
+
+     * @return a JsonStructure built from the flat-file 
+
+     * @throws FileNotFoundException 
+
+     */ 
+
+    public JsonStructure loadJsonStructure() throws FileNotFoundException { 
+
+  
+
+        JsonReader reader = Json.createReader(new FileReader(jsonFileArray)); 
+
+        JsonStructure jsonStructure = reader.read(); 
+
+  
+
+        return jsonStructure; 
+
+    } 
+
+  
+
+} 
+
+ 
+
+// CREATING AN JSON OBJECT 
+
+package com.readlearncode.object.lesson3; 
+
+  
+
+import javax.json.Json; 
+
+import javax.json.JsonObject; 
+
+  
+
+/** 
+
+* Source code github.com/readlearncode 
+
+* 
+
+* @author Alex Theedom www.readlearncode.com 
+
+* @version 1.0 
+
+*/ 
+
+public class ObjectExample3 { 
+
+  
+
+    public JsonObject buildJsonDocument() { 
+
+  
+
+        JsonObject jsonObject = Json.createObjectBuilder() 
+
+                .add("title", "JSON-Processing With Java EE") 
+
+                .add("chapters", Json.createArrayBuilder() 
+
+                        .add("Introduction") 
+
+                        .add("1. JSON and Java") 
+
+                        .add("2. JSON-Processing API features") 
+
+                        .add("3. The Java EE JSON Object model") 
+
+                        .add("4. The Java EE JSON Streaming model") 
+
+                        .add("Conclusion")) 
+
+                .add("released", true) 
+
+                .add("length", 90) 
+
+                .add("sourceCode", Json.createObjectBuilder() 
+
+                        .add("repositoryName", "JSON-Processing-with-Java-EE") 
+
+                        .add("url", "github.com/readlearncode")) 
+
+                .add("complementaryCourse", Json.createArrayBuilder() 
+
+                        .add(Json.createObjectBuilder() 
+
+                                .add("title", "RESTful Service with JAX-RS 2.0") 
+
+                                .add("length", 120)) 
+
+                        .add(Json.createObjectBuilder() 
+
+                                .add("title", "Java Enterprise Edition Introduction") 
+
+                                .add("length", 130))) 
+
+                .addNull("notes") 
+
+                .build(); 
+
+  
+
+        return jsonObject; 
+
+    } 
+
+  
+
+  
+
+} 
+
+ 
+
+// ACCESING FROM JSON OBJECT 
+
+package com.readlearncode.object.lesson4; 
+
+  
+
+import javax.json.*; 
+
+import java.io.FileNotFoundException; 
+
+import java.io.FileReader; 
+
+  
+
+/** 
+
+* Source code github.com/readlearncode 
+
+* 
+
+* @author Alex Theedom www.readlearncode.com 
+
+* @version 1.0 
+
+*/ 
+
+public class ObjectExample4 { 
+
+  
+
+    public static void main(String... args) throws FileNotFoundException { 
+
+        navigateJsonStructure(loadJsonObject(), null); 
+
+    } 
+
+  
+
+    private static void navigateJsonStructure(JsonValue jsonValue, String key) { 
+
+        if (key != null) 
+
+            printKey(key); 
+
+        switch (jsonValue.getValueType()) { 
+
+            case OBJECT: 
+
+                JsonObject jsonObject = (JsonObject) jsonValue; 
+
+                for (String name : jsonObject.keySet()) 
+
+                    navigateJsonStructure(jsonObject.get(name), name); 
+
+                break; 
+
+            case ARRAY: 
+
+                for (JsonValue value : (JsonArray) jsonValue) 
+
+                    navigateJsonStructure(value, null); 
+
+                break; 
+
+            case STRING: 
+
+                printValue(((JsonString) jsonValue).getString()); 
+
+                break; 
+
+            case NUMBER: 
+
+                printValue(jsonValue.toString()); 
+
+                break; 
+
+            case TRUE: 
+
+            case FALSE: 
+
+            case NULL: 
+
+                printValue(jsonValue.getValueType().toString()); 
+
+                break; 
+
+        } 
+
+    } 
+
+  
+
+    private static void printKey(String key) { 
+
+        System.out.print(key + ": "); 
+
+    } 
+
+  
+
+    private static void printValue(String x) { 
+
+        System.out.println(x); 
+
+    } 
+
+  
+
+    /** 
+
+     * Load JSON data from a flat-file 
+
+     * 
+
+     * @return a JsonObject that models the JSON data in the flat-file 
+
+     * @throws FileNotFoundException 
+
+     */ 
+
+    private static JsonObject loadJsonObject() throws FileNotFoundException { 
+
+  
+
+        String jsonFile = Utils.ROOT + System.getProperty("file.separator") + "jsondata-object.json"; 
+
+  
+
+        JsonReader reader = Json.createReader(new FileReader(jsonFile)); 
+
+        JsonObject jsonObject = reader.readObject(); 
+
+  
+
+        return jsonObject; 
+
+    } 
+
+  
+
+} 
+
+// ADDING DATA TO THE JSON 
+
+package com.readlearncode.object.lesson5; 
+
+  
+
+  
+
+import javax.json.Json; 
+
+import javax.json.JsonObject; 
+
+import javax.json.JsonWriter; 
+
+import java.io.StringWriter; 
+
+  
+
+/** 
+
+* Source code github.com/readlearncode 
+
+* 
+
+* @author Alex Theedom www.readlearncode.com 
+
+* @version 1.0 
+
+*/ 
+
+public class ObjectExample6 { 
+
+  
+
+    public String writeJsonStructure() { 
+
+  
+
+        StringWriter stringWriter = new StringWriter(); 
+
+        JsonWriter jsonWriter = Json.createWriter(stringWriter); 
+
+        jsonWriter.writeObject(buildJsonDocument()); 
+
+        jsonWriter.close(); 
+
+  
+
+        return stringWriter.toString(); 
+
+    } 
+
+  
+
+    private JsonObject buildJsonDocument() { 
+
+  
+
+        JsonObject jsonObject = Json.createObjectBuilder() 
+
+                .add("title", "JSON-Processing With Java EE") 
+
+                .add("chapters", Json.createArrayBuilder() 
+
+                        .add("Introduction") 
+
+                        .add("1. JSON and Java") 
+
+                        .add("2. JSON-Processing API features") 
+
+                        .add("3. The Java EE JSON Object model") 
+
+                        .add("4. The Java EE JSON Streaming model") 
+
+                        .add("Conclusion")) 
+
+                .add("released", true) 
+
+                .add("length", 90) 
+
+                .add("sourceCode", Json.createObjectBuilder() 
+
+                        .add("repositoryName", "JSON-Processing-with-Java-EE") 
+
+                        .add("url", "github.com/readlearncode")) 
+
+                .add("complementaryCourse", Json.createArrayBuilder() 
+
+                        .add(Json.createObjectBuilder() 
+
+                                .add("title", "RESTful Service with JAX-RS 2.0") 
+
+                                .add("length", 120)) 
+
+                        .add(Json.createObjectBuilder() 
+
+                                .add("title", "Java Enterprise Edition Introduction") 
+
+                                .add("length", 130))) 
+
+                .addNull("notes") 
+
+                .build(); 
+
+  
+
+        return jsonObject; 
+
+    } 
+
+  
+
+  
+
+} 
+
+ 
+
+// WRITING AS TEXT FILE  
+
+package com.readlearncode.object.lesson5; 
+
+  
+
+  
+
+import javax.json.Json; 
+
+import javax.json.JsonObject; 
+
+import javax.json.JsonWriter; 
+
+import java.io.File; 
+
+import java.io.FileOutputStream; 
+
+import java.io.IOException; 
+
+  
+
+/** 
+
+* Source code github.com/readlearncode 
+
+* 
+
+* @author Alex Theedom www.readlearncode.com 
+
+* @version 1.0 
+
+*/ 
+
+public class ObjectExample7 { 
+
+  
+
+    public static void main(String... arg) throws IOException { 
+
+  
+
+        File file = new File("json-output.json"); 
+
+  
+
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file)) { 
+
+  
+
+            if (!file.exists()) { 
+
+                file.createNewFile(); 
+
+            } 
+
+  
+
+            JsonWriter jsonWriter = Json.createWriter(fileOutputStream); 
+
+            jsonWriter.writeObject(buildJsonDocument()); 
+
+  
+
+            jsonWriter.close(); 
+
+  
+
+            // Flush and close file output streams 
+
+            fileOutputStream.flush(); 
+
+            fileOutputStream.close(); 
+
+        } 
+
+  
+
+    } 
+
+  
+
+    private static JsonObject buildJsonDocument() { 
+
+  
+
+        JsonObject jsonObject = Json.createObjectBuilder() 
+
+                .add("title", "JSON-Processing With Java EE") 
+
+                .add("chapters", Json.createArrayBuilder() 
+
+                        .add("Introduction") 
+
+                        .add("1. JSON and Java") 
+
+                        .add("2. JSON-Processing API features") 
+
+                        .add("3. The Java EE JSON Object model") 
+
+                        .add("4. The Java EE JSON Streaming model") 
+
+                        .add("Conclusion")) 
+
+                .add("released", true) 
+
+                .add("length", 90) 
+
+                .add("sourceCode", Json.createObjectBuilder() 
+
+                        .add("repositoryName", "JSON-Processing-with-Java-EE") 
+
+                        .add("url", "github.com/readlearncode")) 
+
+                .add("complementaryCourse", Json.createArrayBuilder() 
+
+                        .add(Json.createObjectBuilder() 
+
+                                .add("title", "RESTful Service with JAX-RS 2.0") 
+
+                                .add("length", 120)) 
+
+                        .add(Json.createObjectBuilder() 
+
+                                .add("title", "Java Enterprise Edition Introduction") 
+
+                                .add("length", 130))) 
+
+                .addNull("notes") 
+
+                .build(); 
+
+  
+
+        return jsonObject; 
+
+    } 
+
+  
+
+  
+
+} 
+
+ 
+
+// STREAMING READING FROM A FILE 
+
+package com.readlearncode.streaming.lesson2; 
+
+  
+
+import javax.json.Json; 
+
+import javax.json.stream.JsonParser; 
+
+import java.io.StringReader; 
+
+  
+
+/** 
+
+* Source code github.com/readlearncode 
+
+* 
+
+* @author Alex Theedom www.readlearncode.com 
+
+* @version 1.0 
+
+*/ 
+
+public class StreamingExample1 { 
+
+  
+
+    public static void main(String... args) { 
+
+        parseJsonString(); 
+
+    } 
+
+  
+
+  
+
+    private static void parseJsonString() { 
+
+  
+
+        JsonParser parser = Json.createParser(new StringReader(JSON)); 
+
+  
+
+        while (parser.hasNext()) { 
+
+            JsonParser.Event event = parser.next(); 
+
+            switch (event) { 
+
+                case START_ARRAY: 
+
+                case END_ARRAY: 
+
+                case START_OBJECT: 
+
+                case END_OBJECT: 
+
+                case VALUE_FALSE: 
+
+                case VALUE_NULL: 
+
+                case VALUE_TRUE: 
+
+                    System.out.println(event.toString()); 
+
+                    break; 
+
+                case KEY_NAME: 
+
+                    System.out.print(event.toString() + " " + parser.getString() + " - "); 
+
+                    break; 
+
+                case VALUE_STRING: 
+
+                case VALUE_NUMBER: 
+
+                    System.out.println(event.toString() + " " + parser.getString()); 
+
+                    break; 
+
+            } 
+
+        } 
+
+    } 
+
+  
+
+    private static String JSON = "{\n" + 
+
+            "  \"title\": \"JSON-Processing With Java EE\",\n" + 
+
+            "  \"chapters\": [\n" + 
+
+            "    \"Introduction\",\n" + 
+
+            "    \"1. JSON and Java\",\n" + 
+
+            "    \"2. JSON-Processing API features\",\n" + 
+
+            "    \"3. The Java EE JSON Object model\",\n" + 
+
+            "    \"4. The Java EE JSON Streaming model\",\n" + 
+
+            "    \"Conclusion\"\n" + 
+
+            "  ],\n" + 
+
+            "  \"released\": true,\n" + 
+
+            "  \"length\": 90,\n" + 
+
+            "  \"sourceCode\": {\n" + 
+
+            "    \"repositoryName\": \"JSON-Processing-with-Java-EE\",\n" + 
+
+            "    \"url\": \"github.com/readlearncode\"\n" + 
+
+            "  },\n" + 
+
+            "  \"complementaryCourse\": [\n" + 
+
+            "    {\n" + 
+
+            "      \"title\": \"RESTful Service with JAX-RS 2.0\",\n" + 
+
+            "      \"length\": 120\n" + 
+
+            "    },\n" + 
+
+            "    {\n" + 
+
+            "      \"title\": \"Java Enterprise Edition Introduction\",\n" + 
+
+            "      \"length\": 130\n" + 
+
+            "    }\n" + 
+
+            "  ],\n" + 
+
+            "  \"notes\": null\n" + 
+
+            "}"; 
+
+  
+
+} 
+
+// WRITING INTO JSON  
+
+package com.readlearncode.streaming.lesson5; 
+
+  
+
+import javax.json.Json; 
+
+import javax.json.JsonValue; 
+
+import javax.json.stream.JsonGenerator; 
+
+import java.io.StringWriter; 
+
+  
+
+/** 
+
+* Source code github.com/readlearncode 
+
+* 
+
+* @author Alex Theedom www.readlearncode.com 
+
+* @version 1.0 
+
+*/ 
+
+public class StreamingExample3 { 
+
+  
+
+  
+
+    public String writeJsonStreamToString(){ 
+
+  
+
+        StringWriter stringWriter = new StringWriter(); 
+
+  
+
+        JsonGenerator generator = Json.createGenerator(stringWriter); 
+
+        generator.writeStartObject() 
+
+                    .write("title","JSON-Processing With Java EE") 
+
+                    .writeStartArray("chapters") 
+
+                        .write("Introduction") 
+
+                        .write("1. JSON and Java") 
+
+                        .write("2. JSON-Processing API features") 
+
+                        .write("3. The Java EE JSON Object model") 
+
+                        .write("4. The Java EE JSON Streaming model") 
+
+                        .write("Conclusion") 
+
+                    .writeEnd() 
+
+                    .write("released",JsonValue.TRUE) 
+
+                    .write("length",90) 
+
+                    .writeStartObject("sourceCode") 
+
+                        .write("repositoryName", "JSON-Processing-with-Java-EE") 
+
+                        .write("url","github.com/readlearncode") 
+
+                    .writeEnd() 
+
+                    .writeStartArray("complementaryCourse") 
+
+                        .writeStartObject() 
+
+                            .write("title", "RESTful Service with JAX-RS 2.0") 
+
+                            .write("length", 120) 
+
+                        .writeEnd() 
+
+                        .writeStartObject() 
+
+                            .write("title", "Java Enterprise Edition Introduction") 
+
+                            .write("length", 130) 
+
+                        .writeEnd() 
+
+                    .writeEnd() 
+
+                    .write("notes", JsonValue.NULL) 
+
+                .writeEnd(); 
+
+        generator.close(); 
+
+  
+
+        return stringWriter.toString(); 
+
+    } 
+
+  
+
+  
+
+} 
+
+ 
+
+// STRING WRITING 
+
+package com.readlearncode.streaming.lesson5; 
+
+  
+
+import javax.json.Json; 
+
+import javax.json.JsonValue; 
+
+import javax.json.stream.JsonGenerator; 
+
+import javax.json.stream.JsonGeneratorFactory; 
+
+import java.io.StringWriter; 
+
+import java.util.Collections; 
+
+  
+
+/** 
+
+* Source code github.com/readlearncode 
+
+* 
+
+* @author Alex Theedom www.readlearncode.com 
+
+* @version 1.0 
+
+*/ 
+
+public class StreamingExample3PrettyPrint { 
+
+  
+
+    public static void main(String ...args){ 
+
+        writeJsonStreamToString(); 
+
+    } 
+
+  
+
+  
+
+    public static void writeJsonStreamToString(){ 
+
+  
+
+        StringWriter stringWriter = new StringWriter(); 
+
+  
+
+        JsonGeneratorFactory jsonGeneratorFactory = Json.createGeneratorFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true)); 
+
+        JsonGenerator generator = jsonGeneratorFactory.createGenerator(stringWriter); 
+
+  
+
+        generator.writeStartObject() 
+
+                    .write("title","JSON-Processing With Java EE") 
+
+                    .writeStartArray("chapters") 
+
+                        .write("Introduction") 
+
+                        .write("1. JSON and Java") 
+
+                        .write("2. JSON-Processing API features") 
+
+                        .write("3. The Java EE JSON Object model") 
+
+                        .write("4. The Java EE JSON Streaming model") 
+
+                        .write("Conclusion") 
+
+                    .writeEnd() 
+
+                    .write("released",JsonValue.TRUE) 
+
+                    .write("length",90) 
+
+                    .writeStartObject("sourceCode") 
+
+                        .write("repositoryName", "JSON-Processing-with-Java-EE") 
+
+                        .write("url","github.com/readlearncode") 
+
+                    .writeEnd() 
+
+                    .writeStartArray("complementaryCourse") 
+
+                        .writeStartObject() 
+
+                            .write("title", "RESTful Service with JAX-RS 2.0") 
+
+                            .write("length", 120) 
+
+                        .writeEnd() 
+
+                        .writeStartObject() 
+
+                            .write("title", "Java Enterprise Edition Introduction") 
+
+                            .write("length", 130) 
+
+                        .writeEnd() 
+
+                    .writeEnd() 
+
+                    .write("notes", JsonValue.NULL) 
+
+                .writeEnd(); 
+
+        generator.close(); 
+
+  
+
+        System.out.print(stringWriter.toString()); 
+
+  
+
+    } 
+
+  
+
+} 
+
+ 
+
+// File output Stream 
+
+package com.readlearncode.streaming.lesson5; 
+
+  
+
+import javax.json.Json; 
+
+import javax.json.JsonValue; 
+
+import javax.json.stream.JsonGenerator; 
+
+import java.io.*; 
+
+  
+
+/** 
+
+* Source code github.com/readlearncode 
+
+* 
+
+* @author Alex Theedom www.readlearncode.com 
+
+* @version 1.0 
+
+*/ 
+
+public class StreamingExample4 { 
+
+  
+
+    public static void main(String... args) throws IOException { 
+
+  
+
+        File file = new File("json-output.json"); 
+
+  
+
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file)) { 
+
+  
+
+            if (!file.exists()) { 
+
+                file.createNewFile(); 
+
+            } 
+
+  
+
+            JsonGenerator generator = Json.createGenerator(fileOutputStream); 
+
+            generator.writeStartObject() 
+
+                    .write("title","JSON-Processing With Java EE") 
+
+                    .writeStartArray("chapters") 
+
+                        .write("Introduction") 
+
+                        .write("1. JSON and Java") 
+
+                        .write("2. JSON-Processing API features") 
+
+                        .write("3. The Java EE JSON Object model") 
+
+                        .write("4. The Java EE JSON Streaming model") 
+
+                        .write("Conclusion") 
+
+                    .writeEnd() 
+
+                        .write("released",JsonValue.TRUE) 
+
+                        .write("length",90) 
+
+                    .writeStartObject("sourceCode") 
+
+                        .write("repositoryName", "JSON-Processing-with-Java-EE") 
+
+                        .write("url","github.com/readlearncode") 
+
+                    .writeEnd() 
+
+                    .writeStartArray("complementaryCourse") 
+
+                        .writeStartObject() 
+
+                            .write("title", "RESTful Service with JAX-RS 2.0") 
+
+                            .write("length", 120) 
+
+                        .writeEnd() 
+
+                        .writeStartObject() 
+
+                            .write("title", "Java Enterprise Edition Introduction") 
+
+                            .write("length", 130) 
+
+                        .writeEnd() 
+
+                    .writeEnd() 
+
+                    .write("notes", JsonValue.NULL) 
+
+                .writeEnd(); 
+
+            generator.close(); 
+
+  
+
+            // Flush and close file output streams 
+
+            fileOutputStream.flush(); 
+
+            fileOutputStream.close(); 
+
+        } 
+
+  
+
+    } 
+
+} 
+
+  
+
+  
+
+ 
