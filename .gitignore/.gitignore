@@ -1,0 +1,130 @@
+import javax.json.*;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.StringWriter;
+
+public class jsonObjectBuider {
+    public static JsonArray related1;
+
+    public static JsonObject buildJsonDocument() {
+        JsonObject jsonObject = Json.createObjectBuilder()
+                .add("acct", "1234")
+                .add("accts", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("acctClodeDt", "12/12/12")
+                                .add("related", Json.createArrayBuilder()
+                                        .add(Json.createObjectBuilder()
+                                                .add("pk", Json.createObjectBuilder()
+                                                        .add("sorptyid", "rsp111")
+                                                        .add("sorid", "rs111")
+                                                )
+                                        )
+                                        .add(Json.createObjectBuilder()
+                                                .add("pk", Json.createObjectBuilder()
+                                                        .add("sorptyid", "rsp222")
+                                                        .add("sorid", "rs222")
+                                                )
+                                        )
+
+                                )
+                                .add("legal", Json.createArrayBuilder()
+                                        .add(Json.createObjectBuilder()
+                                                .add("pk", Json.createObjectBuilder()
+                                                        .add("sorptyid", "lsp111")
+                                                        .add("sorid", "ls111")
+                                                ))
+                                )
+                        )
+
+                )
+                .build();
+        return jsonObject;
+    }
+
+    private static void navigateJsonStructure(JsonValue jsonValue, String key) {
+        if (key != null)
+            printKey(key);
+        switch (jsonValue.getValueType()) {
+            case OBJECT:
+                JsonObject jsonObject = (JsonObject) jsonValue;
+                for (String name : jsonObject.keySet())
+                    navigateJsonStructure(jsonObject.get(name), name);
+                break;
+            case ARRAY:
+                for (JsonValue value : (JsonArray) jsonValue)
+                    navigateJsonStructure(value, null);
+                break;
+            case STRING:
+                printValue(((JsonString) jsonValue).getString());
+                break;
+            case NUMBER:
+                printValue(jsonValue.toString());
+                break;
+            case TRUE:
+            case FALSE:
+            case NULL:
+                printValue(jsonValue.getValueType().toString());
+                break;
+        }
+    }
+
+    private static void printKey(String key) {
+        System.out.print(key + ": ");
+    }
+
+    private static void printValue(String x) {
+        System.out.println(x);
+    }
+
+    private static String writeJsonString(JsonObject writeObject) {
+        StringWriter stringWriter = new StringWriter();
+        JsonWriter jsonWriter = Json.createWriter(stringWriter);
+        jsonWriter.writeObject(writeObject);
+        jsonWriter.close();
+        return stringWriter.toString();
+
+    }
+
+
+    public static void main(String... args) throws FileNotFoundException {
+        navigateJsonStructure(buildJsonDocument(), null);
+        System.out.println(writeJsonString(buildJsonDocument()));
+
+
+        JsonArray acctsArray = buildJsonDocument().getJsonArray("accts");
+        for (int i = 0; i < acctsArray.size(); i++) {
+            JsonObject accts = acctsArray.getJsonObject(i);
+            JsonArray relatedArray = accts.getJsonArray("related");
+            JsonArray related1 = Json.createArrayBuilder().build();
+
+            for (int j = 0; j < relatedArray.size(); j++) {
+                JsonObject related = relatedArray.getJsonObject(j);
+                System.out.println(relatedArray.toString());
+                JsonObject pkobj = related.getJsonObject("pk");
+                System.out.println(writeJsonString(pkobj));
+                if (pkobj.getString("sorptyid").toString() == "rsp111") {
+
+                    related1.add(relatedArray);
+                } else {
+
+                    System.out.println(related.toString());
+                }
+            }
+            System.out.println(related1.toString());
+
+        }
+
+
+            // JsonObject accts = obj.getJsonObject("accts");
+            //JsonArray relatedArray = accts.getJsonArray("related");
+            // JsonObject object = relatedArray.getJsonObject(1);
+        /*for(JsonValue relatedObj: relatedArray)
+        {
+            System.out.println(relatedObj.toString());
+        }
+        */
+
+
+
+    }
+}
